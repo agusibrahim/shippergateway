@@ -1,4 +1,4 @@
-// ignore_for_file: prefer_single_quotes
+// ignore_for_file: prefer_single_quotes, lines_longer_than_80_chars
 
 import 'package:dart_frog/dart_frog.dart';
 import 'package:dio/dio.dart' as d;
@@ -39,12 +39,12 @@ Future<Response> onRequest(RequestContext context) async {
 
   var q = {
     "consignee": {"name": param['penerima_name'], "phone_number": param['penerima_phone']},
-    "consigner": {
-      "name": param['pengirim_name'],
-      "email": "agusibrahim@gmail.com",
-      "phone_number": param['pengirim_phone']
+    "consigner": {"name": param['pengirim_name'], "email": "agusibrahim@gmail.com", "phone_number": param['pengirim_phone']},
+    "courier": {
+      "cod": false,
+      "rate_id": int.parse(param['fare_id'] ?? '0'),
+      "use_insurance": '${param['use_insurance']}' == 'true'
     },
-    "courier": {"cod": false, "rate_id": int.parse(param['fare_id'] ?? '0'), "use_insurance": true},
     "coverage": "domestic",
     "destination": {
       "address": param['des_addr'],
@@ -72,11 +72,20 @@ Future<Response> onRequest(RequestContext context) async {
     },
     "payment_type": "postpay"
   };
+  var ts = await httpr.get("/pickup/timeslot?time_zone=Asia%2FJakarta", options: d.Options(
+    validateStatus: (status) {
+      return status! < 500;
+    },
+  ));
   var r = await httpr.post("/order", data: q, options: d.Options(
     validateStatus: (status) {
       return status! < 500;
     },
   ));
+  print(r.data);
+  print(q);
+  var moddata = r.data['data'];
+  moddata['timeslots'] = ts.data['data']['time_slots'];
 
-  return Response.json(body: {"status": "OK", "msg": "berhasil mendapatkan harga", "data": r.data['data']});
+  return Response.json(body: {"status": "OK", "msg": "berhasil order", "data": r.data['data']});
 }

@@ -90,6 +90,7 @@ Future<Response> onRequest(RequestContext context) async {
         "price": e['final_price'],
         "min_day": e['min_day'],
         "max_day": e['max_day'],
+        "must_user_insurance": e['must_use_insurance'],
         "type": e['rate']['type'],
         "desc": e['rate']['description']
       });
