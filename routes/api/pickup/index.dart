@@ -42,6 +42,13 @@ Future<Response> onRequest(RequestContext context) async {
       await httpr.post("/pickup${hastime == 2 ? '/timeslot' : ''}", data: payload, options: d.Options(validateStatus: (status) {
     return status! < 500;
   }));
-  print("Resrp: ${r.data}");
+  if (r.data['metadata']['errors'] != null) {
+    if ((r.data['metadata']['errors'] as List<dynamic>).any((e) => e['code'] == 29034)) {
+      var rd = await httpr.get("/order/${param['order_id']}");
+      return Response.json(body: {"status": "OK", "msg": "detail order", "data": rd.data['data']});
+    } else
+      return Response.json(body: {"status": "ERR", "msg": "terjadi error", "error": r.data['metadata']['errors']});
+  }
+  print("Resrp: ${json.encode(r.data)}");
   return Response.json(body: {"status": "OK", "msg": "berhasil request pickup", "data": r.data['data']});
 }
